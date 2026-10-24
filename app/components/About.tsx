@@ -14,41 +14,36 @@ function AnimatedStat({ count, label }: StatProps) {
   useEffect(() => {
     const el = numRef.current;
     if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !triggered.current) {
-          triggered.current = true;
-          const dur = 1400;
-          const t0 = performance.now();
-          const step = (t: number) => {
-            const p = Math.min((t - t0) / dur, 1);
-            el.textContent = String(Math.round(count * (1 - Math.pow(1 - p, 3))));
-            if (p < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !triggered.current) {
+        triggered.current = true;
+        const dur = 1400;
+        const t0 = performance.now();
+        const step = (t: number) => {
+          const p = Math.min((t - t0) / dur, 1);
+          el.textContent = String(Math.round(count * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        observer.disconnect();
+      }
+    }, { threshold: 0.3 });
     observer.observe(el);
     return () => observer.disconnect();
   }, [count]);
 
   return (
-    <div className="stat">
+    <div className="stat-card">
       <div className="num" ref={numRef}>0</div>
       <div className="lbl">{label}</div>
     </div>
   );
 }
 
-const CHECK_ICON = (
-  <svg viewBox="0 0 24 24">
-    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
-  </svg>
+const CHECK = (
+  <span className="point-icon">
+    <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg>
+  </span>
 );
 
 const POINTS = [
@@ -63,20 +58,11 @@ const POINTS = [
 export default function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Scroll reveal for the whole section
   useEffect(() => {
     const els = sectionRef.current?.querySelectorAll('.reveal') ?? [];
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.18 }
-    );
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.14 });
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
@@ -86,17 +72,17 @@ export default function About() {
       <div className="container">
         <div className="sec-head reveal">
           <span className="sec-tag">About Me</span>
-          <h2>
-            Designing &amp; building <em>digital experiences</em>
-          </h2>
+          <h2>Designing &amp; building <em>digital experiences</em></h2>
         </div>
+
         <div className="about-grid">
-          <div className="about-stats reveal">
+          <div className="stats-grid reveal">
             <AnimatedStat count={10} label="Technologies in my stack" />
             <AnimatedStat count={4} label="Featured projects built" />
             <AnimatedStat count={3} label="Creative disciplines" />
-            <AnimatedStat count={100} label="% passion for clean design" />
+            <AnimatedStat count={100} label="% passion for design" />
           </div>
+
           <div className="about-text reveal d2">
             <h3>Frontend Developer &amp; UI/UX Designer</h3>
             <p>
@@ -109,11 +95,11 @@ export default function About() {
               thoughtful design, clean implementation, and continuous learning — currently working
               with React.js, React Native/Expo, Laravel, and modern design tools.
             </p>
+            <div className="about-divider" />
             <ul className="about-points">
               {POINTS.map((pt) => (
-                <li key={pt}>
-                  {CHECK_ICON}
-                  {pt}
+                <li key={pt} className="about-point">
+                  {CHECK}{pt}
                 </li>
               ))}
             </ul>
